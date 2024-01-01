@@ -29,7 +29,7 @@ export const pointOfInterest = [
   "food",
   "pizza",
   "theatre",
-  "park"
+  "park",
 ] as const;
 
 export type PointOfInterest = (typeof pointOfInterest)[number];

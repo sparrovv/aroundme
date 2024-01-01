@@ -5,7 +5,10 @@ import { useEffect, useRef } from "react";
 import { aroundme } from "~/aroundme.server";
 import { LocationAddress } from "~/lib/aroundme/types";
 
-import { createLocation, createLocationFromAddressLocation } from "~/models/location.server";
+import {
+  createLocation,
+  createLocationFromAddressLocation,
+} from "~/models/location.server";
 
 const validateLocation = (location: FormDataEntryValue | null) => {
   //it should be string with comma

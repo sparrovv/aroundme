@@ -103,10 +103,10 @@ export const CachedClient = (client: Client, cache: CacheI): CachedClient => {
 
   const getCachedResponse = async <Req, Res>(
     x: Req,
-    fetchFunc: (x: Req) => Res
+    fetchFunc: (x: Req) => Res,
   ) => {
     const cacheKey = normaliseCacheKey(
-      JSON.stringify(stripApiKeyFromParams(x as ReqA))
+      JSON.stringify(stripApiKeyFromParams(x as ReqA)),
     );
     const cachedResponse = await cache.get(cacheKey);
 

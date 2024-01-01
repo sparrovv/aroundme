@@ -39,23 +39,23 @@ type AroundMeLocations = {
     address: Address,
     pointOfInterest: PointOfInterest,
     radius: number,
-    limitOfResults?: number
+    limitOfResults?: number,
   ) => Promise<DistanceFromLocation[]>;
   findAllNearbyPois: (
     address: Address,
     pointOfInterests: PointOfInterest[],
     radius: number,
-    limitOfResults?: number
+    limitOfResults?: number,
   ) => Promise<GroupedPOIs>;
   distanceFromLandmarks: (
     address: Address,
-    landMarks: LandMark[]
+    landMarks: LandMark[],
   ) => Promise<DistanceFromLandMark[]>;
 };
 
 export const AroundMeLocationsClient = (
   client: CachedClient,
-  apiKey: string
+  apiKey: string,
 ): AroundMeLocations => {
   const addressToGoogleMapsAddress = (address: Address): string => {
     return `${address.address}, ${address.city}, ${address.country}`;
@@ -103,7 +103,7 @@ export const AroundMeLocationsClient = (
   const getDirections = async (
     from: Location,
     to: Location,
-    travelMode: TravelMode = TravelMode.walking
+    travelMode: TravelMode = TravelMode.walking,
   ): Promise<RouteLeg> => {
     const params: DirectionsRequest = {
       params: {
@@ -131,7 +131,7 @@ export const AroundMeLocationsClient = (
 
   const checkRatingOver = (
     rating: number | undefined,
-    ratingOver: number = 0
+    ratingOver: number = 0,
   ) => {
     // there are cases where there's only a name of the city without the address
     // valid address looks like this: "ul. Stańczyka 12, Kraków"
@@ -142,7 +142,7 @@ export const AroundMeLocationsClient = (
     address: Address,
     pointOfInterest: PointOfInterest,
     radius: number,
-    limitOfResults?: number
+    limitOfResults?: number,
   ): Promise<DistanceFromLocation[]> => {
     const loc: Location = await findLocation(address);
 
@@ -193,7 +193,7 @@ export const AroundMeLocationsClient = (
           status: r.business_status,
           rating: r.rating,
         };
-      })
+      }),
     );
 
     return await nearbyPoisWithDistance;
@@ -203,24 +203,27 @@ export const AroundMeLocationsClient = (
     address: Address,
     pointOfInterests: PointOfInterest[],
     radius: number,
-    limitOfResults?: number
+    limitOfResults?: number,
   ): Promise<GroupedPOIs> => {
     const nearbyPOIs = await Promise.all(
       pointOfInterests.map((poi) =>
-        findNearbyPoi(address, poi, radius, limitOfResults)
-      )
+        findNearbyPoi(address, poi, radius, limitOfResults),
+      ),
     );
 
     const flatten = nearbyPOIs.flat();
 
-    const groupedPOIs = flatten.reduce((acc, current) => {
-      const key = current.pointOfInterest;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(current);
-      return acc;
-    }, {} as { [key: string]: typeof flatten });
+    const groupedPOIs = flatten.reduce(
+      (acc, current) => {
+        const key = current.pointOfInterest;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(current);
+        return acc;
+      },
+      {} as { [key: string]: typeof flatten },
+    );
 
     // @todo: this looks bad, refactor, what if there's no walkingDuration?
     const oneHour = 60 * 60;
@@ -230,10 +233,10 @@ export const AroundMeLocationsClient = (
         ...acc,
         [current]: groupedPOIs[current].sort(
           (a, b) =>
-            (a.walkingDuration || oneHour) - (b.walkingDuration || oneHour)
+            (a.walkingDuration || oneHour) - (b.walkingDuration || oneHour),
         ),
       }),
-      {} as { [key in PointOfInterest]: typeof flatten }
+      {} as { [key in PointOfInterest]: typeof flatten },
     );
 
     return sortedPOIs;
@@ -245,7 +248,7 @@ export const AroundMeLocationsClient = (
 
   const distanceFromLandmarks = async (
     address: Address,
-    landMarks: LandMark[]
+    landMarks: LandMark[],
   ): Promise<DistanceFromLandMark[]> => {
     const loc: Location = await findLocation(address);
 
@@ -259,12 +262,12 @@ export const AroundMeLocationsClient = (
         const directions = await getDirections(
           loc,
           landMarkLocation,
-          TravelMode.walking
+          TravelMode.walking,
         );
         const publicDirections = await getDirections(
           loc,
           landMarkLocation,
-          TravelMode.transit
+          TravelMode.transit,
         );
         const distance = distanceInMeters(loc, landMarkLocation);
 
@@ -278,7 +281,7 @@ export const AroundMeLocationsClient = (
           publicTransportDuration: publicDirections.duration.value,
           publicDurationInMinutes: toMinutes(publicDirections.duration.value),
         };
-      })
+      }),
     );
 
     return await distanceFromLandmarks;

@@ -19,7 +19,7 @@ const client = CachedClient(googleMapsClient, cache);
 
 const aroundMeClient = AroundMeLocationsClient(
   client,
-  GOOGLE_MAPS_API_KEY as string
+  GOOGLE_MAPS_API_KEY as string,
 );
 
 describe("find the nearest", () => {
@@ -33,10 +33,10 @@ describe("find the nearest", () => {
     const result = await aroundMeClient.findNearbyPoi(
       location,
       "restaurant",
-      1500
+      1500,
     );
     const sortedResult = result.sort(
-      (a, b) => (a.walkingDistance || 10000) - (b.walkingDistance || 10000)
+      (a, b) => (a.walkingDistance || 10000) - (b.walkingDistance || 10000),
     );
 
     expect(sortedResult.length).toEqual(20);
@@ -60,14 +60,14 @@ describe("find the nearest", () => {
         "food",
         "pizza",
       ],
-      1000
+      1000,
     );
 
     expect(sortedPOIs["restaurant"].length).toEqual(20);
     expect(sortedPOIs["discount"].length).toEqual(5);
     expect(sortedPOIs["przedszkole"].length).toEqual(20);
     expect(sortedPOIs["przedszkole"][0].name).toEqual(
-      "Przedszkole Kolorowe Kredki Stańczyka 8a"
+      "Przedszkole Kolorowe Kredki Stańczyka 8a",
     );
   });
 
@@ -83,7 +83,7 @@ describe("find the nearest", () => {
         city: "Krakow",
         country: "Poland",
       },
-      [rynek]
+      [rynek],
     );
 
     expect(result.length).toEqual(1);
