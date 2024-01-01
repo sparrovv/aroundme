@@ -1,4 +1,4 @@
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -37,11 +37,13 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     "szkoła podstawowa",
     "food",
     "pizza",
+    "gym",
   ];
+
   const address: Address = {
     address: location.name.split(",")[0],
-    city: location.name.split(",")[1],
-    country: "Poland",
+    city: location.city,
+    country: location.country,
   };
 
   const groupedPois = await aroundme.findAllNearbyPois(address, pois, 1000);
@@ -50,14 +52,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   return json({ location, groupedPois });
 };
 
-const poiElement = (poi: PointOfInterest, places: DistanceFromLocation[]) => {
-  const columns = Object.keys(places[0]).map((key) => {
-    return {
-      field: key,
-      headerName: key,
-      width: 150,
-    };
-  });
+const poiElement = (
+  poi: PointOfInterest,
+  places: DistanceFromLocation[],
+  columns: GridColDef[],
+) => {
   const placesWithId = places.map((place, index) => {
     return {
       ...place,
@@ -71,8 +70,6 @@ const poiElement = (poi: PointOfInterest, places: DistanceFromLocation[]) => {
       <section
         id="DataGrid"
         style={{
-          height: 350,
-          width: "100%",
           marginLeft: "auto",
           marginRight: "auto",
         }}
@@ -80,7 +77,14 @@ const poiElement = (poi: PointOfInterest, places: DistanceFromLocation[]) => {
         <DataGrid
           rows={placesWithId}
           columns={columns}
-          sx={{ backgroundColor: "#caffca" }}
+          // sx={{ backgroundColor: "#caffca" }}
+          pagination={true}
+          pageSizeOptions={[{ value: 5, label: "5" }]}
+          paginationModel={{
+            page: 0,
+            pageSize: 5,
+          }}
+          paginationMode="client"
         />
       </section>
     </div>
@@ -94,21 +98,39 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export default function NoteDetailsPage() {
+const poiColumns = [
+  { field: "name", headerName: "Name", width: 250, flex: 1 },
+  {
+    field: "walkingDurationInMinutes",
+    headerName: "Walking Duration",
+    width: 100,
+    flex: 1,
+  },
+  { field: "rating", headerName: "Rating", width: 100, flex: 1 },
+];
+
+export default function LocationPage() {
   const data = useLoaderData<typeof loader>();
+  const location = data.location;
   const pois: GroupedPOIs = data.groupedPois;
 
-  // @todo fix it
-  const geoLoc = Object.values(pois)[0][0].theReferenceGeoLoc as LatLngTuple;
-  const foo = Object.keys(pois).map((poi) => {
-    return poiElement(poi as PointOfInterest, pois[poi as PointOfInterest]);
+  const geoLoc = [location.latitude, location.longitude] as LatLngTuple;
+
+  const poisTables = Object.keys(pois).map((poi) => {
+    return poiElement(
+      poi as PointOfInterest,
+      pois[poi as PointOfInterest],
+      poiColumns,
+    );
   });
-  const closestPlaces = Object.keys(pois).map((poi) => {
+
+  const closestPlacesMarkers = Object.keys(pois).map((poi) => {
     const theFirstOne = pois[poi as PointOfInterest][0];
     return {
       geoLocation: theFirstOne.geoLocation as LatLngTuple,
       name: theFirstOne.name,
       poi: poi as PointOfInterest,
+      durationInMinutes: theFirstOne.walkingDurationInMinutes,
     };
   });
 
@@ -116,7 +138,7 @@ export default function NoteDetailsPage() {
 
   return (
     <div>
-      <h3 className="text-2xl font-bold">{data.location.name}</h3>
+      <h3 className="text-2xl font-bold">{location.formattedAddress}</h3>
       <div className="grid grid-cols-1 gap-4">
         <ClientOnly
           fallback={
@@ -128,16 +150,16 @@ export default function NoteDetailsPage() {
         >
           {() => (
             <Map
+              mainLocation={{ name: location.formattedAddress, latLng: geoLoc }}
               height={mapHeight}
-              position={geoLoc}
               zoom={16}
-              markers={closestPlaces}
+              markers={closestPlacesMarkers}
             />
           )}
         </ClientOnly>
       </div>
       <hr className="my-4" />
-      <div className="grid grid-cols-1 gap-4">{foo}</div>
+      <div className="grid grid-cols-1 gap-4">{poisTables}</div>
     </div>
   );
 }

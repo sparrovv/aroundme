@@ -10,24 +10,30 @@ import {
 } from "react-leaflet";
 
 export function Map({
+  mainLocation,
   height,
-  position,
   zoom,
   markers,
 }: {
+  mainLocation: {
+    name: string;
+    latLng: LatLngTuple;
+  };
   height: string;
-  position: LatLngTuple;
   zoom: number;
   markers?: {
     geoLocation: LatLngTuple;
     name: string;
+    durationInMinutes: number;
     poi: string;
   }[];
 }) {
   const otherMarkers = markers?.map((marker, index) => {
     return (
       <Marker key={index} position={marker.geoLocation}>
-        <Popup>{marker.name}</Popup>
+        <Popup>
+          {marker.poi} - {marker.name} - ({marker.durationInMinutes}m away)
+        </Popup>
       </Marker>
     );
   });
@@ -39,7 +45,7 @@ export function Map({
         style={{
           height: "100%",
         }}
-        center={position}
+        center={mainLocation.latLng}
         zoom={zoom}
         scrollWheelZoom={false}
       >
@@ -48,15 +54,14 @@ export function Map({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <LayerGroup>
-          <Circle center={position} pathOptions={fillBlueOptions} radius={10}>
-            <Tooltip permanent>The Location</Tooltip>
+          <Circle
+            center={mainLocation.latLng}
+            pathOptions={fillBlueOptions}
+            radius={10}
+          >
+            <Tooltip permanent>{mainLocation.name}</Tooltip>
           </Circle>
         </LayerGroup>
-        {/* <Marker position={position}>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker> */}
         {otherMarkers}
       </MapContainer>
     </div>

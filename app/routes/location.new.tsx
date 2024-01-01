@@ -2,20 +2,21 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
+import { aroundme } from "~/aroundme.server";
+import { LocationAddress } from "~/lib/aroundme/types";
 
-import { createLocation } from "~/models/location.server";
-
+import { createLocation, createLocationFromAddressLocation } from "~/models/location.server";
 
 const validateLocation = (location: FormDataEntryValue | null) => {
   //it should be string with comma
   if (typeof location !== "string" || location.length === 0) {
     return false;
-  }else if(location.split(",").length !== 2){
+  } else if (location.split(",").length !== 2) {
     return false;
   } else {
     return true;
   }
-}
+};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -23,12 +24,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (validateLocation(location) === false) {
     return json(
-      { errors: { body: null, location: "location is required, format 'street name $number, $city'" } },
+      {
+        errors: {
+          body: null,
+          location: "location is required, format 'street name $number, $city'",
+        },
+      },
       { status: 400 },
     );
   }
+  const geoResults: LocationAddress = await aroundme.geoCode(
+    location as string,
+  );
 
-  const loc = await createLocation(location as string);
+  const loc = await createLocationFromAddressLocation(geoResults);
 
   return redirect(`/location/${loc.id}`);
 };
