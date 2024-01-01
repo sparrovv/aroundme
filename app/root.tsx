@@ -13,10 +13,10 @@ import {
 import { getUser } from "~/session.server";
 import stylesheet from "~/tailwind.css";
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
-];
+// export const links: LinksFunction = () => [
+//   { rel: "stylesheet", href: stylesheet },
+//   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+// ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ user: await getUser(request) });
