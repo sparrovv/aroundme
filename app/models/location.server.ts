@@ -12,6 +12,10 @@ export async function getLocationByName(name: Location["name"]) {
   return prisma.location.findFirst({ where: { name } });
 }
 
+export async function getLocations() {
+  return prisma.location.findMany();
+}
+
 export async function createLocationFromAddressLocation(
   addressLocation: LocationAddress,
 ) {

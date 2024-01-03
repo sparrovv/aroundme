@@ -45,6 +45,7 @@ export const pointOfInterest = [
 
 export type PointOfInterest = (typeof pointOfInterest)[number];
 
+
 export interface DistanceFromLocation {
   pointOfInterest: PointOfInterest;
   geoLocation: number[];
