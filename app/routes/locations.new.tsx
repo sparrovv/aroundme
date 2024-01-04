@@ -1,20 +1,16 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
+import { Either } from "effect";
 import { useEffect, useRef } from "react";
-import { aroundme } from "~/aroundme.server";
-import { LocationAddress } from "~/lib/aroundme/types";
 
-import {
-  createLocation,
-  createLocationFromAddressLocation,
-} from "~/models/location.server";
+import { aroundme } from "~/aroundme.server";
+import { createLocationFromAddressLocation } from "~/models/location.server";
 
 const validateLocation = (location: FormDataEntryValue | null) => {
-  //it should be string with comma
   if (typeof location !== "string" || location.length === 0) {
     return false;
-  } else if (location.split(",").length !== 2) {
+  } else if (location.split(",").length < 2) {
     return false;
   } else {
     return true;
@@ -36,13 +32,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { status: 400 },
     );
   }
-  const geoResults: LocationAddress = await aroundme.geoCode(
-    location as string,
-  );
+  const geoResults = await aroundme.geoCode(location as string);
+  if (Either.isLeft(geoResults)) {
+    return json(
+      {
+        errors: {
+          body: null,
+          location: "cannot find location, try a different one",
+        },
+      },
+      { status: 400 },
+    );
+  } else {
+    const result = geoResults.right;
 
-  const loc = await createLocationFromAddressLocation(geoResults);
+    const loc = await createLocationFromAddressLocation(result);
 
-  return redirect(`/location/${loc.id}`);
+    return redirect(`/locations/${loc.id}`);
+  }
 };
 
 export default function NewNotePage() {

@@ -5,6 +5,7 @@ import {
   TravelMode,
   UnitSystem,
 } from "@googlemaps/google-maps-services-js";
+import { Either } from "effect";
 
 import { CachedClient } from "./cached-client";
 import {
@@ -35,8 +36,15 @@ export type GroupedPOIs = {
   [key in PointOfInterest]: DistanceFromLocation[];
 };
 
+export type NoLocationsFound = {
+  _tag: "NoLocationsFound";
+  message: string;
+};
+
 interface AroundMeLocations {
-  geoCode: (address: string) => Promise<LocationAddress>;
+  geoCode: (
+    address: string,
+  ) => Promise<Either.Either<NoLocationsFound, LocationAddress>>;
   findNearbyPoi: (
     address: Address,
     pointOfInterest: PointOfInterest,
@@ -65,7 +73,7 @@ export const AroundMeLocationsClient = (
 
   const findLocationByStr = async (
     address: string,
-  ): Promise<LocationAddress> => {
+  ): Promise<Either.Either<NoLocationsFound, LocationAddress>> => {
     const result = await client.geocode({
       params: {
         address: address,
@@ -74,10 +82,14 @@ export const AroundMeLocationsClient = (
       timeout: 2000,
     });
 
-    // validate that it's a valid address and the result is not empty
-
-    if (result.data.results.length === 0) {
-      throw new Error("No results found");
+    if (
+      result.data.status === "ZERO_RESULTS" ||
+      result.data.results.length === 0
+    ) {
+      return Either.left({
+        _tag: "NoLocationsFound",
+        message: "No results found",
+      });
     }
 
     const location = result.data.results[0].geometry.location;
@@ -92,7 +104,7 @@ export const AroundMeLocationsClient = (
       addressComponents.find((c) => c.types.includes("country"))?.long_name ||
       "none";
 
-    return {
+    return Either.right({
       inputAddress: address,
       formattedAddress: result.data.results[0].formatted_address,
       latLng: [location.lat, location.lng],
@@ -100,7 +112,7 @@ export const AroundMeLocationsClient = (
       country,
 
       addressComponents: addressComponents,
-    };
+    });
   };
   const findLocation = async (address: Address): Promise<Location> => {
     const result = await client.geocode({

@@ -56,7 +56,7 @@ export function Map({
       iconUrl:
         pointsOfInterestWithEmojiIcon[marker.poi] ||
         "https://openmoji.org/data/color/svg/1F603.svg",
-      iconSize: [30, 46],
+      iconSize: [60, 60],
       iconAnchor: [12, 41],
     });
 
@@ -75,7 +75,7 @@ export function Map({
 
   const i = new L.Icon({
     iconUrl: "https://openmoji.org/data/color/svg/1F603.svg",
-    iconSize: [50, 70],
+    iconSize: [100, 100],
     iconAnchor: [12, 41],
   });
   return (

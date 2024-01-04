@@ -1,9 +1,10 @@
+/* eslint-disable jest/no-conditional-expect */
 import { Client } from "@googlemaps/google-maps-services-js";
+import { Either } from "effect";
 
 import { CachedClient, DiskCache } from "./cached-client";
 
 import { AroundMeLocationsClient, LandMark } from ".";
-import exp from "constants";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config({
@@ -29,53 +30,66 @@ const aroundMeClient = AroundMeLocationsClient(
 );
 
 describe("geocode", () => {
+  it("returns the error when invalid address", async () => {
+    const result = await aroundMeClient.geoCode("invalid, ");
+    expect(result._tag).toEqual("Left");
+    expect(result.left.message).toEqual("No results found");
+  });
+
   it("returns the location and the address", async () => {
-    const result = await aroundMeClient.geoCode("Stańczyka 5, Krakow, Poland");
-    expect(result.inputAddress).toEqual("Stańczyka 5, Krakow, Poland");
-    expect(result.formattedAddress).toEqual(
-      "Stańczyka 5, 30-126 Kraków, Poland",
+    const eitherResult = await aroundMeClient.geoCode(
+      "Stańczyka 5, Krakow, Poland",
     );
-    expect(result.latLng).toEqual([50.0782512, 19.8941993]);
-    expect(result.city).toEqual("Kraków");
-    expect(result.country).toEqual("Poland");
-    expect(result.addressComponents).toEqual([
-      { long_name: "5", short_name: "5", types: ["street_number"] },
-      {
-        long_name: "Stańczyka",
-        short_name: "Stańczyka",
-        types: ["route"],
-      },
-      {
-        long_name: "Bronowice",
-        short_name: "Bronowice",
-        types: ["political", "sublocality", "sublocality_level_1"],
-      },
-      {
-        long_name: "Kraków",
-        short_name: "Kraków",
-        types: ["locality", "political"],
-      },
-      {
-        long_name: "Kraków",
-        short_name: "Kraków",
-        types: ["administrative_area_level_2", "political"],
-      },
-      {
-        long_name: "Małopolskie",
-        short_name: "Małopolskie",
-        types: ["administrative_area_level_1", "political"],
-      },
-      {
-        long_name: "Poland",
-        short_name: "PL",
-        types: ["country", "political"],
-      },
-      {
-        long_name: "30-126",
-        short_name: "30-126",
-        types: ["postal_code"],
-      },
-    ]);
+    expect(eitherResult._tag).toEqual("Right");
+    if (Either.isRight(eitherResult)) {
+      const result = eitherResult.right;
+
+      expect(result.inputAddress).toEqual("Stańczyka 5, Krakow, Poland");
+      expect(result.formattedAddress).toEqual(
+        "Stańczyka 5, 30-126 Kraków, Poland",
+      );
+      expect(result.latLng).toEqual([50.0782512, 19.8941993]);
+      expect(result.city).toEqual("Kraków");
+      expect(result.country).toEqual("Poland");
+      expect(result.addressComponents).toEqual([
+        { long_name: "5", short_name: "5", types: ["street_number"] },
+        {
+          long_name: "Stańczyka",
+          short_name: "Stańczyka",
+          types: ["route"],
+        },
+        {
+          long_name: "Bronowice",
+          short_name: "Bronowice",
+          types: ["political", "sublocality", "sublocality_level_1"],
+        },
+        {
+          long_name: "Kraków",
+          short_name: "Kraków",
+          types: ["locality", "political"],
+        },
+        {
+          long_name: "Kraków",
+          short_name: "Kraków",
+          types: ["administrative_area_level_2", "political"],
+        },
+        {
+          long_name: "Małopolskie",
+          short_name: "Małopolskie",
+          types: ["administrative_area_level_1", "political"],
+        },
+        {
+          long_name: "Poland",
+          short_name: "PL",
+          types: ["country", "political"],
+        },
+        {
+          long_name: "30-126",
+          short_name: "30-126",
+          types: ["postal_code"],
+        },
+      ]);
+    }
   });
 });
 
