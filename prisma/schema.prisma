@@ -51,3 +51,17 @@ model Location {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model LandMark {
+  id      String @id @default(cuid())
+  name    String
+  address String
+  latitude          Float    @db.DoublePrecision // represents the latitude
+  longitude         Float    @db.DoublePrecision // represents the longitude
+
+  city              String
+  country           String 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

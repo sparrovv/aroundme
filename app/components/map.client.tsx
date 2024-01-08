@@ -37,6 +37,7 @@ export function Map({
   height,
   zoom,
   markers,
+  center,
 }: {
   mainLocation: {
     name: string;
@@ -50,13 +51,14 @@ export function Map({
     durationInMinutes: number;
     poi: string;
   }[];
+  center: LatLngTuple;
 }) {
   const otherMarkers = markers?.map((marker, index) => {
     const i = new L.Icon({
       iconUrl:
         pointsOfInterestWithEmojiIcon[marker.poi] ||
         "https://openmoji.org/data/color/svg/1F603.svg",
-      iconSize: [60, 60],
+      iconSize: [30, 30],
       iconAnchor: [12, 41],
     });
 
@@ -75,7 +77,7 @@ export function Map({
 
   const i = new L.Icon({
     iconUrl: "https://openmoji.org/data/color/svg/1F603.svg",
-    iconSize: [100, 100],
+    iconSize: [30, 30],
     iconAnchor: [12, 41],
   });
   return (
@@ -84,7 +86,8 @@ export function Map({
         style={{
           height: "100%",
         }}
-        center={mainLocation.latLng}
+        // center={mainLocation.latLng}
+        center={center}
         zoom={zoom}
         scrollWheelZoom={false}
       >

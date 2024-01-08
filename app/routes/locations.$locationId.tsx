@@ -6,18 +6,21 @@ import {
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
+import { cons } from "effect/List";
 import { LatLngTuple } from "leaflet";
+import { DistanceFromLandMark } from "packages/aroundme/src";
 import invariant from "tiny-invariant";
 
 import { aroundme } from "~/aroundme.server";
 import { ClientOnly } from "~/components/client-only";
 import { Map } from "~/components/map.client";
-import { GroupedPOIs } from "~/lib/aroundme";
+import { GroupedPOIs, LandMark } from "~/lib/aroundme";
 import {
   Address,
   DistanceFromLocation,
   PointOfInterest,
 } from "~/lib/aroundme/types";
+import { getLandMarksByCityAndCountry } from "~/models/landMark.server";
 import { getLocationById } from "~/models/location.server";
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
@@ -27,6 +30,20 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (!location) {
     throw new Response("Not Found", { status: 404 });
   }
+
+  const landmarksInDb = await getLandMarksByCityAndCountry(
+    location.city,
+    location.country,
+  );
+
+  const landmarks: LandMark[] = landmarksInDb.map((landmark) => {
+    return {
+      name: landmark.name,
+      address: landmark.address,
+      geoLocation: [landmark.latitude, landmark.longitude],
+    };
+  });
+
   const pois: PointOfInterest[] = [
     "restaurant",
     "bus stop",
@@ -47,9 +64,13 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   };
 
   const groupedPois = await aroundme.findAllNearbyPois(address, pois, 1000);
+  const landMarksDistance = await aroundme.distanceFromLandmarks(
+    address,
+    landmarks,
+  );
   // find landmarks for the city
 
-  return json({ location, groupedPois });
+  return json({ location, groupedPois, landMarksDistance });
 };
 
 const poiElement = (
@@ -108,11 +129,23 @@ const poiColumns = [
   },
   { field: "rating", headerName: "Rating", width: 100, flex: 1 },
 ];
+function getCentroid(coords: LatLngTuple[]): LatLngTuple {
+  let latSum = 0;
+  let lngSum = 0;
+
+  coords.forEach(([lat, lng]) => {
+    latSum += lat;
+    lngSum += lng;
+  });
+
+  return [latSum / coords.length, lngSum / coords.length];
+}
 
 export default function LocationPage() {
   const data = useLoaderData<typeof loader>();
   const location = data.location;
   const pois: GroupedPOIs = data.groupedPois;
+  const landmarks: DistanceFromLandMark[] = data.landMarksDistance;
 
   const geoLoc = [location.latitude, location.longitude] as LatLngTuple;
 
@@ -124,17 +157,31 @@ export default function LocationPage() {
     );
   });
 
+  const landmarksMarkers = landmarks.map((landmark) => {
+    console.log(landmark);
+    return {
+      geoLocation: landmark.landMark.geoLocation as LatLngTuple,
+      name: landmark.landMark.name,
+      poi: "landmark" as const,
+      durationInMinutes: landmark.walkingDurationInMinutes,
+    };
+  });
+
   const closestPlacesMarkers = Object.keys(pois).map((poi) => {
     const theFirstOne = pois[poi as PointOfInterest][0];
     return {
       geoLocation: theFirstOne.geoLocation as LatLngTuple,
       name: theFirstOne.name,
       poi: poi as PointOfInterest,
-      durationInMinutes: theFirstOne.walkingDurationInMinutes,
+      durationInMinutes: theFirstOne.walkingDurationInMinutes!,
     };
   });
 
+  const foo = [...closestPlacesMarkers, ...landmarksMarkers];
+  // const foo = closestPlacesMarkers;
+
   const mapHeight = "500px";
+  const centroid = getCentroid(foo.map((marker) => marker.geoLocation));
 
   return (
     <div>
@@ -151,9 +198,10 @@ export default function LocationPage() {
           {() => (
             <Map
               mainLocation={{ name: location.formattedAddress, latLng: geoLoc }}
+              center={centroid}
               height={mapHeight}
-              zoom={16}
-              markers={closestPlacesMarkers}
+              zoom={13}
+              markers={foo}
             />
           )}
         </ClientOnly>

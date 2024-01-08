@@ -141,11 +141,13 @@ describe("find the nearest", () => {
       "Przedszkole Kolorowe Kredki Stańczyka 8a",
     );
   });
+});
 
+describe("find landmarks", () => {
   it("returns a list of distances from landmarks", async () => {
     const rynek: LandMark = {
       name: "Rynek Główny",
-      address: "Rynek Główny 1",
+      address: "Rynek Główny 1, Kraków",
     };
 
     const result = await aroundMeClient.distanceFromLandmarks(
@@ -162,7 +164,7 @@ describe("find the nearest", () => {
     const expected = [
       {
         distance: 3549.6576434457784,
-        landMark: { address: "Rynek Główny 1", name: "Rynek Główny" },
+        landMark: { address: "Rynek Główny 1, Kraków", name: "Rynek Główny" },
         publicDurationInMinutes: 22,
         publicTransportDistance: 4007,
         publicTransportDuration: 1346,
@@ -173,55 +175,4 @@ describe("find the nearest", () => {
     ];
     expect(result).toEqual(expected);
   });
-
-  // it('grades the location based on the POI types and the distance', async () => {
-  //   const sortedPOIs = await findAllNearbyPOIs(
-  //     {
-  //       address: "Stańczyka 5",
-  //       city: "Krakow",
-  //       country: "Poland",
-  //     },
-  //     [
-  //       "restaurant",
-  //       "bus stop",
-  //       "tram stop",
-  //       "ośrodek zdrowia",
-  //       "przedszkole",
-  //       "discount",
-  //       "szkoła podstawowa",
-  //       "food",
-  //       'gym',
-  //       'cinema'
-  //     ],
-  //     1000
-  //   );
-
-  //   const score = calculateScore(sortedPOIs)
-  //   expect(score.score).toEqual(41.5)
-  //   // expect(score.scoredPlaces).toEqual({})
-
-  //   const sortedPOIs2 = await findAllNearbyPOIs(
-  //     {
-  //       address: "os. Kombatantów 6",
-  //       city: "Krakow",
-  //       country: "Poland",
-  //     },
-  //     [
-  //       "restaurant",
-  //       "bus stop",
-  //       "tram stop",
-  //       "ośrodek zdrowia",
-  //       "przedszkole",
-  //       "discount",
-  //       "szkoła podstawowa",
-  //       "food",
-  //       "gym",
-  //       "cinema",
-  //     ],
-  //     1000
-  //   );
-
-  //   const score2 = calculateScore(sortedPOIs2)
-  //   expect(score2.score).toEqual(43.5)
-  // })
 });

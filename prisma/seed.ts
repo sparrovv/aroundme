@@ -24,19 +24,14 @@ async function seed() {
     },
   });
 
-  await prisma.note.create({
+  await prisma.landMark.create({
     data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
+      name: "Rynek Główny",
+      address: "Rynek Główny 1, Kraków",
+      city: "Kraków",
+      country: "Poland",
+      latitude: 50.06162289706565,
+      longitude: 19.936520527028534,
     },
   });
 

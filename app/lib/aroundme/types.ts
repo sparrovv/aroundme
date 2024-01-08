@@ -41,10 +41,10 @@ export const pointOfInterest = [
   "pizza",
   "theatre",
   "park",
+  "landmark",
 ] as const;
 
 export type PointOfInterest = (typeof pointOfInterest)[number];
-
 
 export interface DistanceFromLocation {
   pointOfInterest: PointOfInterest;

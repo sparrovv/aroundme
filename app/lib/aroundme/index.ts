@@ -19,7 +19,7 @@ import {
 export interface LandMark {
   name: string;
   address: string;
-  location?: Location;
+  location?: [number, number];
 }
 
 export interface DistanceFromLandMark {

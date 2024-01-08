@@ -1,11 +1,22 @@
-import type { MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import type {
+  ActionFunctionArgs,
+  LoaderFunction,
+  MetaFunction,
+} from "@remix-run/node";
+import { Link, redirect } from "@remix-run/react";
 
 import { useOptionalUser } from "~/utils";
 
 export const meta: MetaFunction = () => [{ title: "Remix Notes" }];
 
+export const loader = async ({ request }: LoaderFunction) => {
+  return redirect(`/locations`);
+};
+
 export default function Index() {
+  return null;
+
+  // at some point we will fix it.
   const user = useOptionalUser();
   return (
     <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
