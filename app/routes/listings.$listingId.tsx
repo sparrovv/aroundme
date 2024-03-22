@@ -9,6 +9,7 @@ import {
 import { cons } from "effect/List";
 import { LatLngTuple } from "leaflet";
 import { DistanceFromLandMark } from "packages/aroundme/src";
+import { list } from "postcss";
 import invariant from "tiny-invariant";
 
 import { aroundme } from "~/aroundme.server";
@@ -20,20 +21,26 @@ import {
   DistanceFromLocation,
   PointOfInterest,
 } from "~/lib/aroundme/types";
-import { getLandMarksByCityAndCountry } from "~/models/landMark.server";
+import { getLandMarksByIds } from "~/models/landMark.server";
+import { getListingById } from "~/models/listing.server";
 import { getLocationById } from "~/models/location.server";
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  invariant(params.locationId, "locationId not found");
+  invariant(params.listingId, "listingId not found");
 
-  const location = await getLocationById(params.locationId);
+  const listing = await getListingById(params.listingId);
+  if (!listing) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const location = await getLocationById(listing.locationId); 
   if (!location) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const landmarksInDb = await getLandMarksByCityAndCountry(
-    location.city,
-    location.country,
+  // landmarks should be ids
+  const landmarksInDb = await getLandMarksByIds(
+    listing.landmarks as string[],
   );
 
   const landmarks: LandMark[] = landmarksInDb.map((landmark) => {
@@ -44,18 +51,6 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     };
   });
 
-  const pois: PointOfInterest[] = [
-    "restaurant",
-    "bus stop",
-    "tram stop",
-    "ośrodek zdrowia",
-    "przedszkole",
-    "discount supermarket",
-    "szkoła podstawowa",
-    "food",
-    "pizza",
-    "gym",
-  ];
 
   const address: Address = {
     address: location.name.split(",")[0],
@@ -63,12 +58,16 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     country: location.country,
   };
 
-  const groupedPois = await aroundme.findAllNearbyPois(address, pois, 1000);
+  const groupedPois = await aroundme.findAllNearbyPois(
+    address, 
+    listing.pois as PointOfInterest[], 
+    1000
+    );
+
   const landMarksDistance = await aroundme.distanceFromLandmarks(
     address,
     landmarks,
   );
-  // find landmarks for the city
 
   return json({ location, groupedPois, landMarksDistance });
 };

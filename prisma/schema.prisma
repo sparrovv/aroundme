@@ -47,6 +47,7 @@ model Location {
   addressComponents Json
   country           String // none string represents not-found
   city              String
+  listings Listing[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,6 +63,19 @@ model LandMark {
   city              String
   country           String 
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Listing {
+  id    String @id @default(cuid())
+  name  String
+
+  pois      Json
+  landmarks Json
+  location  Location @relation(fields: [locationId], references: [id])
+  locationId String
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

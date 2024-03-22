@@ -2,46 +2,56 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
+import { PointOfInterest } from "~/lib/aroundme/types";
+import { getListings } from "~/models/listing.server";
 
-import { getLocations } from "~/models/location.server";
+// interface Listing {
+//     id: number
+//     language: string
+//     location: {
+//         name: string
+//     }
+//     description: string
+//     included_pois: PointOfInterest[]
+// }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const locations = await getLocations();
-  return json({ locations });
+  const listings = await getListings();
+  return json({ listings });
 };
 
-export default function LocationsPage() {
+export default function ListingPage() {
   const data = useLoaderData<typeof loader>();
 
   return (
     <div className="flex h-full min-h-screen flex-col">
       <header className="flex items-center justify-between bg-slate-800 p-4 text-white">
         <h1 className="text-3xl font-bold">
-          <Link to=".">Locations</Link>
+          <Link to=".">Listings</Link>
         </h1>
       </header>
 
       <main className="flex h-full bg-white">
         <div className="h-full w-80 border-r bg-gray-50">
           <Link to="new" className="block p-4 text-xl text-blue-500">
-            + New Location
+            + New Location Listing
           </Link>
 
           <hr />
 
-          {data.locations.length === 0 ? (
-            <p className="p-4">No locations yet</p>
+          {data.listings.length === 0 ? (
+            <p className="p-4">No Listings yet</p>
           ) : (
             <ol>
-              {data.locations.map((location) => (
-                <li key={location.id}>
+              {data.listings.map((listing) => (
+                <li key={listing.id}>
                   <NavLink
                     className={({ isActive }) =>
                       `block border-b p-4 text-xl ${isActive ? "bg-white" : ""}`
                     }
-                    to={location.id}
-                  >
-                    📝 {location.name}
+                    to={listing.id.toString()}
+                  > 
+                   {listing.name} - {listing.createdAt}
                   </NavLink>
                 </li>
               ))}

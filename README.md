@@ -17,3 +17,5 @@ It will provide you with a score based on close by facilities and the distance t
 
 This repo is based on the Remix Blues Stack, this is a full-stack application that allows users to find and share local events and activities.
 Learn more about [Remix Stacks](https://remix.run/stacks).
+
+

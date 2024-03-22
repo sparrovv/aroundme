@@ -16,6 +16,18 @@ export async function getLocations() {
   return prisma.location.findMany();
 }
 
+export async function findOrCreateFromAddressLocation(
+  addressLocation: LocationAddress,
+) {
+  const location = await getLocationByName(addressLocation.inputAddress);
+
+  if (location) {
+    return location;
+  }
+
+  return createLocationFromAddressLocation(addressLocation);
+}
+
 export async function createLocationFromAddressLocation(
   addressLocation: LocationAddress,
 ) {

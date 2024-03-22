@@ -1,4 +1,5 @@
 import { AddressComponent } from "@googlemaps/google-maps-services-js";
+import { Point } from "leaflet";
 
 export interface Location {
   latitude: number;
@@ -19,32 +20,34 @@ export interface LocationAddress {
   country: string;
 }
 
-export const pointOfInterest = [
-  "hospital",
-  "school",
-  "primary school",
-  "kindergarten",
-  "bus stop",
-  "restaurant",
-  "supermarket",
-  "pharmacy",
-  "park",
-  "gym",
-  "cinema",
-  "museum",
-  "tram stop",
-  "ośrodek zdrowia",
-  "przedszkole",
-  "discount",
-  "szkoła podstawowa",
-  "food",
-  "pizza",
-  "theatre",
-  "park",
-  "landmark",
-] as const;
+// export const pointOfInterest = [
+//   "hospital",
+//   "school",
+//   "primary school",
+//   "kindergarten",
+//   "bus stop",
+//   "restaurant",
+//   "supermarket",
+//   "pharmacy",
+//   "park",
+//   "gym",
+//   "cinema",
+//   "museum",
+//   "tram stop",
+//   "ośrodek zdrowia",
+//   "przedszkole",
+//   "discount",
+//   "szkoła podstawowa",
+//   "food",
+//   "pizza",
+//   "theatre",
+//   "park",
+//   "landmark",
+// ] as const;
 
-export type PointOfInterest = (typeof pointOfInterest)[number];
+// export type PointOfInterest = (typeof pointOfInterest)[number];
+import { PointOfInterest } from "~/lib/aroundme/poi";
+export type { PointOfInterest };
 
 export interface DistanceFromLocation {
   pointOfInterest: PointOfInterest;
